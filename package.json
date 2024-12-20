@@ -1,0 +1,39 @@
+{
+  "name": "rest-generator",
+  "version": "1.0.0",
+  "description": "rest interface generator",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "rest-generate": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steinsroka/rest-generator.git"
+  },
+  "author": "steinsroka",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/steinsroka/rest-generator/issues"
+  },
+  "homepage": "https://github.com/steinsroka/rest-generator#readme",
+  "type": "module",
+  "dependencies": {
+    "typescript": ">=4.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.0.0",
+    "ts-node": "^10.0.0"
+  }
+}
