@@ -1,2 +1,2 @@
 # rest-generator
-rest-generator
+rest-generator for jnpmedi
