@@ -1,3 +1,9 @@
+export enum OptionType {
+  Rest = "REST",
+  Flax = "FLAX",
+  Url = "URL",
+}
+
 export enum ParamType {
   Query = "QUERY",
   Header = "HEADER",

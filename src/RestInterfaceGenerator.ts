@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 import * as fs from "fs";
 import * as path from "path";
-import { MethodInfo, ParamType } from "./types";
+import { MethodInfo, OptionType, ParamType } from "./types";
 
 const API_ENDPOINT = `process.env.{YOUR_API_ENDPOINT}`;
 
@@ -112,12 +112,6 @@ export class RestInterfaceGenerator {
           return `  public static ${method.name}: RestUrl = ["${method.httpMethod}", "${method.path}"];`;
         }
 
-        // path의 순서와 pathParamKeys의 순서가 같아야 함
-        // const urlKeys = method.path
-        //   .split("/")
-        //   .filter(e => e.startsWith(":"))
-        //   .map(e => e.replace(/:(\w+)\(\\\\d\+\)/, "$1"));
-
         const pathParams = method.params.filter(
           (param) => param.paramType === ParamType.Path
         );
@@ -127,15 +121,13 @@ export class RestInterfaceGenerator {
           .join(", ");
         const pathParamKeys = pathParams.map((e) => e.name).join(", ");
 
-        // Convert path params to template literals
         const processedPath = method.path.replace(
-          /:([a-zA-Z_][a-zA-Z0-9_]*) (?:\([^)]*\))?/g,
+          /:([a-zA-Z_][a-zA-Z0-9_]*)(?:\([^)]*\))?/g,
           (_, key) => {
-            if (!pathParamKeys.includes(key)) {
-              throw new Error(
-                "pathParam RegEx invalid. Check if the Path regex matches the pathParam."
+            if (!pathParamKeys.includes(key))
+              console.warn(
+                `[GenerateUrlFile] Path variable ${key} not Exist in PathParam Decorator`
               );
-            }
             return `\${${key}}`;
           }
         );
@@ -267,7 +259,7 @@ export class ${className}Flax {
 }`;
   }
 
-  public generate(outputDir: string): void {
+  public generate(outputDir: string, option?: OptionType): void {
     ts.forEachChild(this.sourceFile, (node) => {
       if (ts.isClassDeclaration(node) && node.name) {
         const className = node.name.getText().replace("Controller", "");
@@ -281,25 +273,31 @@ export class ${className}Flax {
         });
 
         // Generate rest.ts
-        const restContent = this.generateRestFile(className, methods);
-        fs.writeFileSync(
-          path.join(outputDir, `${className}.rest.ts`),
-          restContent
-        );
+        if (!option || option === OptionType.Rest) {
+          const restContent = this.generateRestFile(className, methods);
+          fs.writeFileSync(
+            path.join(outputDir, `${className}.rest.ts`),
+            restContent
+          );
+        }
 
         // // Generate flax.ts
-        const flaxContent = this.generateFlaxFile(className, methods);
-        fs.writeFileSync(
-          path.join(outputDir, `${className}.flax.ts`),
-          flaxContent
-        );
+        if (!option || option === OptionType.Flax) {
+          const flaxContent = this.generateFlaxFile(className, methods);
+          fs.writeFileSync(
+            path.join(outputDir, `${className}.flax.ts`),
+            flaxContent
+          );
+        }
 
         // Generate url.ts
-        const urlContent = this.generateUrlFile(className, methods);
-        fs.writeFileSync(
-          path.join(outputDir, `${className}.url.ts`),
-          urlContent
-        );
+        if (!option || option === OptionType.Url) {
+          const urlContent = this.generateUrlFile(className, methods);
+          fs.writeFileSync(
+            path.join(outputDir, `${className}.url.ts`),
+            urlContent
+          );
+        }
       }
     });
   }
