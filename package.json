@@ -1,15 +1,47 @@
 {
-  "name": "rest-generator",
-  "version": "0.1.0",
+  "name": "cyan-rest-generator",
+  "version": "0.1.1",
   "description": "rest interface generator",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/extension.js",
   "bin": {
-    "rest-generator": "dist/src/cli.js"
+    "rest-generator": "dist/cli.js"
+  },
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "generateRestInterface",
+        "title": "Generate REST interface"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "generateRestInterface",
+          "when": "resourceFilename =~ /.*controller.*\\.ts$/i",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "generateRestInterface",
+          "when": "resourceFilename =~ /.*controller.*\\.ts$/i",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
-    "build": "tsc",
-    "prepare": "npm run build"
+    "build": "rm -rf dist/* && tsc",
+    "prepare": "npm run build",
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
   },
   "files": [
     "dist",
@@ -35,6 +67,7 @@
   },
   "devDependencies": {
     "@types/node": "^16.0.0",
+    "@types/vscode": "^1.96.0",
     "ts-node": "^10.0.0"
   }
 }
