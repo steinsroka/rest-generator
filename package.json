@@ -1,14 +1,15 @@
 {
   "name": "rest-generator",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "rest interface generator",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "bin": {
-    "rest-generator": "./bin/cli.js"
+    "rest-generator": "dist/src/cli.js"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepare": "npm run build"
   },
   "files": [
     "dist",
@@ -25,19 +26,15 @@
     "url": "https://github.com/steinsroka/rest-generator/issues"
   },
   "homepage": "https://github.com/steinsroka/rest-generator#readme",
-  "type": "module",
   "dependencies": {
     "commander": "^12.1.0",
-    "liftoff": "^5.0.0",
-    "typescript": ">=4.0.0",
-    "yargs": "^17.7.2"
+    "typescript": ">=4.0.0"
   },
   "peerDependencies": {
     "typescript": ">=4.0.0"
   },
   "devDependencies": {
     "@types/node": "^16.0.0",
-    "@types/yargs": "^17.0.33",
     "ts-node": "^10.0.0"
   }
 }

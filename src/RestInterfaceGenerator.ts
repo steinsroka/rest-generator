@@ -18,6 +18,32 @@ export class RestInterfaceGenerator {
     );
   }
 
+  private checkIsController() {
+    return (node: ts.Node) => {
+      if (ts.isClassDeclaration(node)) {
+        if (!node.name?.getText().endsWith("Controller")) {
+          return false;
+        }
+
+        // Check if the class extends BaseController
+        if (node.heritageClauses) {
+          for (const clause of node.heritageClauses) {
+            if (clause.token === ts.SyntaxKind.ExtendsKeyword) {
+              for (const type of clause.types) {
+                if (type.expression.getText() === "BaseController") {
+                  return true;
+                }
+              }
+            }
+          }
+          return false;
+        }
+        return false;
+      }
+      return false;
+    };
+  }
+
   private extractMethodInfo(node: ts.MethodDeclaration): MethodInfo {
     const methodName = node.name.getText();
     const params: MethodInfo["params"] = [];
@@ -262,6 +288,8 @@ export class ${className}Flax {
   public generate(outputDir: string, option?: OptionType): void {
     ts.forEachChild(this.sourceFile, (node) => {
       if (ts.isClassDeclaration(node) && node.name) {
+        if (!this.checkIsController()(node)) return;
+
         const className = node.name.getText().replace("Controller", "");
         const methods: MethodInfo[] = [];
 
@@ -301,17 +329,4 @@ export class ${className}Flax {
       }
     });
   }
-}
-
-// CLI usage
-if (require.main === module) {
-  const [, , service, inputFile] = process.argv;
-  if (!service || !inputFile) {
-    console.error("Usage: ts-node generator.ts <service> <input-file>");
-    process.exit(1);
-  }
-
-  const outputDir = path.join(__dirname, "..", "maven-rest", service);
-  const generator = new RestInterfaceGenerator(inputFile);
-  generator.generate(outputDir);
 }
