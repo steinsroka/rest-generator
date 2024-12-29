@@ -1,9 +1,11 @@
-import * as ts from "typescript";
 import * as fs from "fs";
 import * as path from "path";
-import { MethodInfo, OptionType, ParamType } from "./types";
+import * as ts from "typescript";
+import { MethodInfo, ParamType, RestFileType } from "./types";
 
 const API_ENDPOINT = `process.env.{YOUR_API_ENDPOINT}`;
+const resolveApiEndPoint = (apiEndPoint: string) =>
+  `process.env.${apiEndPoint}`;
 
 export class RestInterfaceGenerator {
   private sourceFile: ts.SourceFile;
@@ -16,6 +18,33 @@ export class RestInterfaceGenerator {
       ts.ScriptTarget.Latest,
       true
     );
+  }
+
+  private isWritableDirectory(dirPath: string): boolean {
+    try {
+      // Normalize path
+      const normalizedPath = path.normalize(dirPath);
+
+      // Check if directory exists
+      if (!fs.existsSync(normalizedPath)) {
+        return false;
+      }
+
+      // Check if it's a directory
+      const stats = fs.statSync(normalizedPath);
+      if (!stats.isDirectory()) {
+        return false;
+      }
+
+      // Check write permission by attempting to create a temporary file
+      const testPath = path.join(normalizedPath, `.write-test-${Date.now()}`);
+      fs.writeFileSync(testPath, "");
+      fs.unlinkSync(testPath);
+
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   private checkIsController() {
@@ -169,7 +198,11 @@ ${urlEntries}
 }`;
   }
 
-  private generateRestFile(className: string, methods: MethodInfo[]): string {
+  private generateRestFile(
+    className: string,
+    methods: MethodInfo[],
+    apiEndPoint?: string
+  ): string {
     const capitalizeFirstLetter = (str: string) => {
       if (!str.length) return "";
       return str.charAt(0).toUpperCase() + str.slice(1);
@@ -200,11 +233,13 @@ ${urlEntries}
           ? `...${className}Url.${method.name}(${pathParamKeys})`
           : `...${className}Url.${method.name}`;
 
-        return `  public static async ${method.name}(req: ApiReq<${requestType}>): ${method.returnType} {
+        return `  public static async ${
+          method.name
+        }(req: ApiReq<${requestType}>): ${method.returnType} {
     const authorization = extractKey(req, "authorization");
 ${extractKeys}
     const resp = await HttpRequest.request<${responseType}>(
-      ${API_ENDPOINT},
+      ${resolveApiEndPoint(apiEndPoint || "") || API_ENDPOINT},
       ${urlVariable},
       req,
       {
@@ -229,7 +264,11 @@ export class ${className}Rest {
 }`;
   }
 
-  private generateFlaxFile(className: string, methods: MethodInfo[]): string {
+  private generateFlaxFile(
+    className: string,
+    methods: MethodInfo[],
+    apiEndPoint?: string
+  ): string {
     const capitalizeFirstLetter = (str: string) => {
       if (!str.length) return "";
 
@@ -261,10 +300,14 @@ export class ${className}Rest {
             })
             .join("\n") + "\n".repeat(!!pathParamKeys.length ? 1 : 0);
 
-        return `  public static ${method.name}(data: FxRequestData<${requestType}>): FxApiRequestData<${responseType}> {
+        return `  public static ${
+          method.name
+        }(data: FxRequestData<${requestType}>): FxApiRequestData<${responseType}> {
     ${extractKeys}
     return {
-      ...restReq(${API_ENDPOINT}, ${urlVariable}, data),
+      ...restReq(${
+        resolveApiEndPoint(apiEndPoint || "") || API_ENDPOINT
+      }, ${urlVariable}, data),
       reducer: resp => resp,
       errReducer: resp => resp,
     };
@@ -285,7 +328,16 @@ export class ${className}Flax {
 }`;
   }
 
-  public generate(outputDir: string, option?: OptionType): void {
+  public generate({
+    outputPath,
+    options,
+  }: {
+    outputPath: string;
+    options?: { fileType?: RestFileType; apiEndPoint?: string };
+  }): void {
+    if (!this.isWritableDirectory(outputPath)) {
+      throw new Error(`Output path ${outputPath} is not writable`);
+    }
     ts.forEachChild(this.sourceFile, (node) => {
       if (ts.isClassDeclaration(node) && node.name) {
         if (!this.checkIsController()(node)) return;
@@ -301,28 +353,48 @@ export class ${className}Flax {
         });
 
         // Generate rest.ts
-        if (!option || option === OptionType.Rest) {
-          const restContent = this.generateRestFile(className, methods);
+        if (
+          !options ||
+          !options.fileType ||
+          options.fileType === RestFileType.Rest
+        ) {
+          const restContent = this.generateRestFile(
+            className,
+            methods,
+            options?.apiEndPoint
+          );
           fs.writeFileSync(
-            path.join(outputDir, `${className}.rest.ts`),
+            path.join(outputPath, `${className}.rest.ts`),
             restContent
           );
         }
 
         // // Generate flax.ts
-        if (!option || option === OptionType.Flax) {
-          const flaxContent = this.generateFlaxFile(className, methods);
+        if (
+          !options ||
+          !options.fileType ||
+          options.fileType === RestFileType.Flax
+        ) {
+          const flaxContent = this.generateFlaxFile(
+            className,
+            methods,
+            options?.apiEndPoint
+          );
           fs.writeFileSync(
-            path.join(outputDir, `${className}.flax.ts`),
+            path.join(outputPath, `${className}.flax.ts`),
             flaxContent
           );
         }
 
         // Generate url.ts
-        if (!option || option === OptionType.Url) {
+        if (
+          !options ||
+          !options.fileType ||
+          options.fileType === RestFileType.Url
+        ) {
           const urlContent = this.generateUrlFile(className, methods);
           fs.writeFileSync(
-            path.join(outputDir, `${className}.url.ts`),
+            path.join(outputPath, `${className}.url.ts`),
             urlContent
           );
         }

@@ -1,4 +1,4 @@
-export enum OptionType {
+export enum RestFileType {
   Rest = "REST",
   Flax = "FLAX",
   Url = "URL",
@@ -24,3 +24,27 @@ export interface MethodInfo {
   httpMethod: string;
   path: string;
 }
+
+export const MAVEN_PRODUCT_TYPES = [
+  "ADMIN",
+  "AUTH",
+  "BILLING",
+  "BUILDER",
+  "CDMS",
+  "CONVERTER",
+  "CONVERTER-VALIDATOR",
+  "DOCS",
+  "DOCS-PDF",
+  "ECOA",
+  "EDC-EXTERNAL",
+  "ERECRUITMENT",
+  "OCR",
+  "PORTAL",
+  "SAFETY",
+  "SIGN",
+  "SSO",
+  "TMF",
+  "VALIDATOR",
+  "VDR",
+  "X",
+];

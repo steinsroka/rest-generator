@@ -13,9 +13,9 @@ program
   .version(version, "-v, --version", "Output the current version")
   .argument("<input-path>", "Path to input specification file")
   .argument("[output-path]", "Path to output directory", "./")
-  .action((inputPath, outputPath) => {
+  .action((inputPath: string, outputPath: string) => {
     const generator = new RestInterfaceGenerator(inputPath);
-    generator.generate(outputPath);
+    generator.generate({ outputPath });
     console.log(`REST interface generated in ${outputPath} successfully!`);
   });
 
