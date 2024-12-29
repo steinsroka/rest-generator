@@ -1,11 +1,11 @@
 # rest-generator
 
-rest-generator for jnpmedi
+rest-generator for cyan
 
 ## Installation
 
 ```bash
-npm install rest-interface-generator --save-dev
+npm install cyan-rest-generator --save-dev
 ```
 
 ## Usage
@@ -13,27 +13,13 @@ npm install rest-interface-generator --save-dev
 ### As a CLI tool
 
 ```bash
-npx rest-generate
+rest-generator <input-path> <output-path>
 ```
-
-## Configuration
-
-Add to your package.json:
-
-```json
-{
-  "scripts": {
-    "generate-api": "rest-generate my-service ./src/controllers/MyController.ts"
-  }
-}
-```
-
-## Environment Variables
-
-Required environment variables:
-
-- YOUR_API_ENDPOINT: The base URL for your API
 
 ## Features
 
 - Generates maven-rest interfaces (rest, flax, url)
+
+## As a VSCode extension
+
+- https://marketplace.visualstudio.com/items?itemName=steinsroka.cyan-rest-generator

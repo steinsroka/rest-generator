@@ -2,6 +2,7 @@
   "name": "cyan-rest-generator",
   "version": "0.1.1",
   "description": "rest interface generator",
+  "publisher": "steinsroka",
   "main": "dist/extension.js",
   "bin": {
     "rest-generator": "dist/cli.js"
@@ -12,6 +13,7 @@
   "categories": [
     "Other"
   ],
+  "activationEvents": [],
   "contributes": {
     "commands": [
       {
